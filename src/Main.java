@@ -92,6 +92,17 @@ public class Main {
             System.out.println();
 
         }
+        Integer k = 1;
+        for (int i = 0; i < C.size(); i++) {
+            System.out.print("x" + k);
+            if (i != C.size() - 1) {
+                System.out.print(", ");
+            }
+            if (i == C.size() - 1) {
+                System.out.println(" >= 0");
+            }
+            k += 1;
+        }
         System.out.println();
 
         ArrayList<Double> ans = simplex(C, A, b);
