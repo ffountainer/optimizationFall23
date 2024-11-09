@@ -147,6 +147,13 @@ public class Main {
 
     public static void northwest(int[] supply, int rows, int columns, int[][] costs, int[] demand, Integer allSupply) {
         int[][] times = new int[rows][columns];
+        int[][] oldCosts = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                oldCosts[i][j] = costs[i][j];
+            }
+        }
+
         Integer wholeDemand = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
@@ -158,7 +165,7 @@ public class Main {
             int i = 0;
             while (demand[j] != 0) {
                 if (supply[i] >= demand[j]) {
-                    times[i][j] = costs[i][j] * demand[j];
+                    times[i][j] = demand[j];
                     supply[i] = supply[i] - demand[j];
                     demand[j] = 0;
                     for (int k = i + 1; k < rows; k++) {
@@ -166,7 +173,7 @@ public class Main {
                     }
                 } else {
                     demand[j] = demand[j] - supply[i];
-                    times[i][j] = costs[i][j] * supply[i];
+                    times[i][j] = supply[i];
                     supply[i] = 0;
                     for (int k = j + 1; k < columns; k++) {
                         costs[i][k] = 0;
@@ -186,7 +193,7 @@ public class Main {
         Integer totalCost = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                totalCost += times[i][j];
+                totalCost += times[i][j] * oldCosts[i][j];
             }
         }
 
@@ -313,7 +320,7 @@ public class Main {
             int i = locX;
             int j = locY;
             if (supply[i] >= demand[j]) {
-                times[i][j] = costs[i][j] * demand[j];
+                times[i][j] = demand[j];
                 supply[i] = supply[i] - demand[j];
                 demand[j] = 0;
                 for (int k = i + 1; k < rows; k++) {
@@ -321,7 +328,7 @@ public class Main {
                 }
             } else {
                 demand[j] = demand[j] - supply[i];
-                times[i][j] = costs[i][j] * supply[i];
+                times[i][j] = supply[i];
                 supply[i] = 0;
                 for (int k = j + 1; k < columns; k++) {
                     visited[i][k] = 1;
@@ -360,7 +367,7 @@ public class Main {
         totalCost = 0;
         for (int m = 0; m < rows; m++) {
             for (int n = 0; n < columns; n++) {
-                totalCost += times[m][n];
+                totalCost += times[m][n] * costs[m][n];
             }
         }
 
@@ -448,7 +455,7 @@ public class Main {
             int i = x;
             int j = y;
             if (supply[i] >= demand[j]) {
-                times[i][j] = costs[i][j] * demand[j];
+                times[i][j] = demand[j];
                 supply[i] = supply[i] - demand[j];
                 demand[j] = 0;
                 for (int k = 0; k < rows; k++) {
@@ -456,7 +463,7 @@ public class Main {
                 }
             } else {
                 demand[j] = demand[j] - supply[i];
-                times[i][j] = costs[i][j] * supply[i];
+                times[i][j] = supply[i];
                 supply[i] = 0;
                 for (int k = 0; k < columns; k++) {
                     visited[i][k] = 1;
@@ -494,7 +501,7 @@ public class Main {
         totalCost = 0;
         for (int m = 0; m < rows; m++) {
             for (int n = 0; n < columns; n++) {
-                totalCost += times[m][n];
+                totalCost += times[m][n] * costs[m][n];
             }
         }
 
