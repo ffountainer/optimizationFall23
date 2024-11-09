@@ -1,670 +1,511 @@
-import java.util.ArrayList;
 import java.util.Scanner;
-
-import static java.lang.Math.abs;
-
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Write Max for maximization problem OR Min for minimization");
-        String type = scanner.nextLine();
-
-        System.out.println("Enter vector C in one line:");
+        System.out.println("Enter a vector of coefficients of supply S");
         String line = scanner.nextLine();
         String[] wholeLine = line.split(" ");
-        ArrayList<Double> C = new ArrayList<>();
+        int[] S = new int[wholeLine.length];
+        int k = 0;
         for (String s : wholeLine) {
-            C.add(Double.parseDouble(s));
-        }
-
-
-        if (type.equals("Min")) {
-            for (int i = 0; i < C.size(); i++) {
-                C.set(i, -C.get(i));
-            }
-        }
-
-        Matrix A = new Matrix("");
-
-        System.out.println("Enter b in one line:");
-        String lineB = scanner.nextLine();
-        String[] wholeLineB = lineB.split(" ");
-        ArrayList<Double> b = new ArrayList<>();
-        b.add(0.0);
-        for (String s : wholeLineB) {
-            b.add(Double.parseDouble(s));
-        }
-
-        ArrayList<Double> b2 = b;
-
-        System.out.println("Enter x0 in one line:");
-        String x0str = scanner.nextLine();
-        String[] wholeLineX_0 = x0str.split(" ");
-        ArrayList<Double> x0 = new ArrayList<>();
-        for (String s : wholeLineX_0) {
-            x0.add(Double.parseDouble(s));
-        }
-
-        Integer accuracy = 0;
-        System.out.println("Enter the approximation accuracy (the number of digits after the decimal point):");
-        String ac = scanner.nextLine();
-        accuracy = Integer.parseInt(ac);
-
-        System.out.println("Your problem:");
-        if (type.equals("Max")) {
-            System.out.print("Maximise z = ");
-        }
-        if (type.equals("Min")) {
-            System.out.print("Minimise z = ");
-        }
-        Integer counter = 1;
-        for (int i = 0; i < C.size(); i++) {
-            if (type.equals("Max")) {
-                System.out.print(C.get(i) + "*x" + counter);
-            }
-            if (type.equals("Min")) {
-                System.out.print(-C.get(i) + "*x" + counter);
-            }
-            counter += 1;
-            if (type.equals("Max")) {
-                if (i != C.size() - 1 && C.get(i + 1) >= 0) {
-                    System.out.print(" + ");
-                }
-                if (i != C.size() - 1 && C.get(i + 1) < 0) {
-                    System.out.print(" ");
-                }
-            }
-            if (type.equals("Min")) {
-                if (i != C.size() - 1 && -C.get(i + 1) >= 0) {
-                    System.out.print(" + ");
-                }
-                if (i != C.size() - 1 && -C.get(i + 1) < 0) {
-                    System.out.print(" ");
-                }
-            }
-
-
-        }
-        System.out.println();
-        System.out.println("Subject to the constraints: ");
-        for (int i = 0; i < A.numberOfRows; i++) {
-            counter = 1;
-            for (int j = 0; j < C.size(); j++) {
-                System.out.print(A.matrix.get(i).get(j) + "*x" + counter);
-                counter += 1;
-                if (j != C.size() - 1 && A.matrix.get(i).get(j + 1) >= 0) {
-                    System.out.print(" + ");
-                }
-                if (j != C.size() - 1 && A.matrix.get(i).get(j + 1) < 0) {
-                    System.out.print(" ");
-                }
-            }
-            System.out.print(" <= " + b.get(i + 1));
-            System.out.println();
-
-        }
-        Integer k = 1;
-        for (int i = 0; i < C.size(); i++) {
-            System.out.print("x" + k);
-            if (i != C.size() - 1) {
-                System.out.print(", ");
-            }
-            if (i == C.size() - 1) {
-                System.out.println(" >= 0");
-            }
+            S[k] = Integer.parseInt(s);
             k += 1;
         }
+        Integer wholeSupply = 0;
+        for (int i = 0; i < S.length; i++) {
+            wholeSupply += S[i];
+        }
+
+        System.out.println("Enter the number of row and columns for the costs matrix divided by space");
+        String dimensions = scanner.nextLine();
+        String[] dim = dimensions.split(" ");
+        int rows = Integer.parseInt(dim[0]);
+        int columns = Integer.parseInt(dim[1]);
+        System.out.println("Enter the matrix of coefficients of costs C row by row");
+        int[][] costs = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            String row = scanner.nextLine();
+            String[] elements = row.split(" ");
+            for (int j = 0; j < columns; j++) {
+                costs[i][j] = Integer.parseInt(elements[j]);
+            }
+        }
+
+        System.out.println("Enter a vector of coefficients of demand D");
+
+        String d = scanner.nextLine();
+        String[] dStr = d.split(" ");
+
+        int[] demand = new int[dStr.length];
+        k = 0;
+        for (String s : dStr) {
+            demand[k] = Integer.parseInt(s);
+            k += 1;
+        }
+
+        Integer wholeDemand = 0;
+        for (int i = 0; i < demand.length; i++) {
+            wholeDemand += demand[i];
+        }
+
+        System.out.println();
+        System.out.println("Here is an input parameter table:");
         System.out.println();
 
-        ArrayList<Double> answer2 = InteriorPointAlgorithm(C, A, b2, x0, 0.5, 0.9);
+        Integer length = Integer.toString(wholeDemand).length();
 
-        boolean flag = false;
-        for (int i = 0; i < answer2.size(); i++) {
-            if (!Double.isNaN(answer2.get(i))) {
-                flag = true;
+        System.out.print("Source ");
+        for (int i = 0; i < columns; i++) {
+            System.out.print("B" + i + " ");
+            int len = 2;
+            while (len < length) {
+                System.out.print(" ");
+                len += 1;
             }
         }
+        System.out.println("Supply");
 
 
-        System.out.println("Interior Point Algorithm result:");
-
-        if (answer2.isEmpty() || !flag) {
-            System.out.println("The method is not applicable!");
-        }
-        else {
-            if (type.equals("Max")) {
-                Integer c = 1;
-                for (int i = 0; i < answer2.size() - 1; i++) {
-                    double val = answer2.get(i);
-                    val = Math.round(val * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                    System.out.println(String.format("x" + c + " = " + "%." + accuracy + "f", val));
-                    c += 1;
+        for (int i = 0; i < rows; i++) {
+            System.out.print("A" + i + "     ");
+            for (int j = 0; j < columns; j++) {
+                System.out.print(costs[i][j] + " ");
+                int len = Integer.toString(costs[i][j]).length();
+                while (len < length) {
+                    System.out.print(" ");
+                    len += 1;
                 }
-                double func = answer2.get(answer2.size() - 1);
-                func = Math.round(func * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                System.out.println(String.format("Maximum value is " + "%." + accuracy + "f", func));
             }
-            if (type.equals("Min")) {
-                Integer c = 1;
-                for (int i = 0; i < answer2.size() - 1; i++) {
-                    double val = answer2.get(i);
-                    val = Math.round(val * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                    System.out.println(String.format("x" + c + " = " + "%." + accuracy + "f", val));
-                    c += 1;
-                }
-                double func = -answer2.get(answer2.size() - 1);
-                func = Math.round(func * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                System.out.println(String.format("Minimum value is " + "%." + accuracy + "f", func));
+            System.out.print(S[i]);
+            System.out.print("\n");
+        }
+        System.out.print("Demand ");
+        for (int i = 0; i < columns; i++) {
+            System.out.print(demand[i] + " ");
+            int len = Integer.toString(demand[i]).length();
+            while (len < length) {
+                System.out.print(" ");
+                len += 1;
             }
         }
+        System.out.println(wholeDemand);
         System.out.println();
+        System.out.println("---------------------");
+        System.out.println();
+        boolean flag = true;
 
-        System.out.println("Simplex result:");
-        ArrayList<Double> ans = simplex(C, A, b);
-        if (ans.isEmpty()) {
-            System.out.println("The method is not applicable!");
+        if (!wholeDemand.equals(wholeSupply)) {
+            System.out.println("The problem is not balanced!");
+            flag = false;
         }
-        else {
-            if (type.equals("Max")) {
-                Integer c = 1;
-                for (int i = 0; i < ans.size() - 1; i++) {
-                    double val = ans.get(i);
-                    val = Math.round(val * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                    System.out.println(String.format("x" + c + " = " + "%." + accuracy + "f", val));
-                    c += 1;
-                }
-                double func = ans.get(ans.size() - 1);
-                func = Math.round(func * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                System.out.println(String.format("Maximum value is " + "%." + accuracy + "f", func));
-            }
-            if (type.equals("Min")) {
-                Integer c = 1;
-                for (int i = 0; i < ans.size() - 1; i++) {
-                    double val = ans.get(i);
-                    val = Math.round(val * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                    System.out.println(String.format("x" + c + " = " + "%." + accuracy + "f", val));
-                    c += 1;
-                }
-                double func = -ans.get(ans.size() - 1);
-                func = Math.round(func * Math.pow(10, accuracy)) / Math.pow(10, accuracy);
-                System.out.println(String.format("Minimum value is " + "%." + accuracy + "f", func));
+
+        int[][] costsVog = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                costsVog[i][j] = costs[i][j];
             }
         }
+        int[] supplyVog = new int[rows];
+        for (int i = 0; i < rows; i++) {
+            supplyVog[i] = S[i];
+        }
+
+        int[] demandVog = new int[columns];
+        for (int i = 0; i < columns; i++) {
+            demandVog[i] = demand[i];
+        }
+
+        int[][] costsRus = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                costsRus[i][j] = costs[i][j];
+            }
+        }
+        int[] supplyRus = new int[rows];
+        for (int i = 0; i < rows; i++) {
+            supplyRus[i] = S[i];
+        }
+
+        int[] demandRus = new int[columns];
+        for (int i = 0; i < columns; i++) {
+            demandRus[i] = demand[i];
+        }
+
+        if (flag) {
+            northwest(S, rows, columns, costs, demand, wholeSupply);
+            System.out.println("---------------------");
+            System.out.println();
+            vogel(supplyVog, rows, columns, costsVog, demandVog, wholeSupply);
+            System.out.println("---------------------");
+            System.out.println();
+            russel(supplyRus, rows, columns, costsRus, demandRus, wholeSupply);
+        }
+
 
     }
 
-    public static ArrayList<Double> InteriorPointAlgorithm(ArrayList<Double> initC, Matrix initA, ArrayList<Double> b, ArrayList<Double> x0, Double alpha, Double epsilon) {
-        boolean solved = false;
-        ArrayList<Double> x = x0;
-        while (!solved) {
-            Matrix A = initA;
-            ArrayList<Double> C = initC;
-
-            ArrayList<Double> oldX = x;
-
-            Matrix D = Matrix.diag(x);
-
-            A = A.multiply(D);
-
-            C = D.multiplyMatVec(C);
-
-
-            Matrix identity = Matrix.identity(A.getNumberOfColumns());
-
-
-            Matrix inverseD = Matrix.findInverse(D, identity, A.getNumberOfColumns());
-
-            x = inverseD.multiplyMatVec(x);
-
-
-            Matrix transposeA = A.transpose();
-
-            Matrix AmultTranspose = A.multiply(transposeA);
-
-            Matrix I = Matrix.identity(AmultTranspose.getNumberOfColumns());
-            Matrix AmultTrInverse = Matrix.findInverse(AmultTranspose, I, AmultTranspose.numberOfColumns);
-            Matrix Aintermediate = A.transpose().multiply(AmultTrInverse);
-            A = Aintermediate.multiply(A);
-
-            Matrix iden = Matrix.identity(A.getNumberOfColumns());
-
-            ArrayList<ArrayList<Double>> array = new ArrayList<>();
-            for (int i = 0; i < A.getNumberOfRows(); i++) {
-                ArrayList<Double> ar = new ArrayList<>();
-                for (int j = 0; j < A.getNumberOfColumns(); j++) {
-                    Double value = iden.matrix.get(i).get(j) - A.matrix.get(i).get(j);
-                    ar.add(value);
-                }
-                array.add(ar);
+    public static void northwest(int[] supply, int rows, int columns, int[][] costs, int[] demand, Integer allSupply) {
+        int[][] times = new int[rows][columns];
+        Integer wholeDemand = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                times[i][j] = 0;
             }
-            Matrix P = new Matrix(array);
-
-
-            ArrayList<Double> projGradient = new ArrayList<>();
-            projGradient = P.multiplyMatVec(C);
-
-
-
-            Double V = 100000000.0;
-            for (int i = 0; i < C.size(); i++) {
-                if (projGradient.get(i) < V) {
-                    V = projGradient.get(i);
-                }
-            }
-            V = abs(V);
-
-            if (V < Math.pow(10, -10)) {
-                ArrayList<Double> ans = new ArrayList<>();
-                return ans;
-            }
-
-
-            Double coefficient = alpha/V;
-
-            for (int i = 0; i < projGradient.size(); i++) {
-                projGradient.set(i, projGradient.get(i) * coefficient);
-            }
-
-            for (int i = 0; i < x.size(); i++) {
-                x.set(i, x.get(i) + projGradient.get(i));
-            }
-
-            x = D.multiplyMatVec(x);
-
-            boolean flag = true;
-            for (int i = 0; i < x.size(); i++) {
-                if (abs(x.get(i) - oldX.get(i)) > epsilon) {
-                    flag = false;
-                }
-            }
-
-            if (flag) {
-                solved = true;
-                ArrayList<Double> answer = x;
-                Double function = 0.0;
-                for (int i = 0; i < initC.size(); i++) {
-                    function += initC.get(i)*x.get(i);
-                }
-                answer.add(function);
-            }
-
-        }
-        return x;
-    }
-    public static ArrayList<Double> simplex(ArrayList<Double> C, Matrix A, ArrayList<Double> b) {
-        ArrayList<Double> answer = new ArrayList<>();
-        Double prevResult = 0.0;
-        Double epsilon = 0.01;
-        ArrayList<Integer> nonBasic = new ArrayList<>();
-
-        Integer numOfVariables = C.size() + A.getNumberOfRows();
-        for (int i = 0; i < numOfVariables; i++) {
-            nonBasic.add(i + 1);
         }
 
-        ArrayList<Integer> basic = new ArrayList<>();
-        for (int i = 0; i < A.getNumberOfRows(); i++) {
-            basic.add(C.size() + i + 1);
-        }
-
-        ArrayList<ArrayList<Double>> workingTable = new ArrayList<>();
-        ArrayList<Double> firstRow = new ArrayList<>();
-        for (int i = 0; i < C.size(); i++) {
-            firstRow.add(-C.get(i));
-        }
-        for (int i = 0; i < A.getNumberOfRows(); i++) {
-            firstRow.add(0.0);
-        }
-        firstRow.add(0.0);
-        workingTable.add(firstRow);
-        int counter = 0;
-        for (int i = 0; i < A.getNumberOfRows(); i++) {
-            ArrayList<Double> array = new ArrayList<>();
-            for (int j = 0; j < C.size(); j++) {
-                array.add(A.matrix.get(i).get(j));
-            }
-            for (int j = 0; j < A.numberOfRows; j++) {
-                if (counter == j) {
-                    array.add(1.0);
-                }
-                else {
-                    array.add(0.0);
-                }
-            }
-            counter += 1;
-            array.add(b.get(i + 1));
-            workingTable.add(array);
-        }
-
-        Integer numberOfColumns = workingTable.get(0).size();
-        Integer numberOfRows = A.getNumberOfRows() + 1;
-
-        while (checkCoefficients(workingTable.get(0))) {
-
-
-            answer.clear();
-            double function = prevResult;
-            Double minNumber = 1000000.0;
-            Integer indexColumn = 0;
-            for (int i = 0; i < workingTable.get(0).size(); i++) {
-                if (workingTable.get(0).get(i) <= minNumber && workingTable.get(0).get(i) < 0) {
-                    minNumber = workingTable.get(0).get(i);
-                    indexColumn = i;
-                }
-            }
-            Double minRatio = 10000000.0;
-            Integer indexRow = 0;
-            Boolean flag = false;
-            for (int i = 1; i < b.size(); i++) {
-                if (workingTable.get(i).get(indexColumn) > 0) {
-                    flag = true;
-                    Double ratio = workingTable.get(i).get(numberOfColumns - 1) / workingTable.get(i).get(indexColumn);
-                    if (ratio < minRatio) {
-                        minRatio = ratio;
-                        indexRow = i;
+        for (int j = 0; j < columns; j++) {
+            int i = 0;
+            while (demand[j] != 0) {
+                if (supply[i] >= demand[j]) {
+                    times[i][j] = costs[i][j] * demand[j];
+                    supply[i] = supply[i] - demand[j];
+                    demand[j] = 0;
+                    for (int k = i + 1; k < rows; k++) {
+                        costs[k][j] = 0;
                     }
-                }
-            }
-            if (!flag) {
-                System.out.println("Unbounded!");
-                return answer;
-            }
-
-            basic.set(indexRow - 1, indexColumn + 1);
-
-            Double ratioValue = workingTable.get(indexRow).get(indexColumn);
-            for (int i = 0; i < numberOfColumns; i++) {
-                workingTable.get(indexRow).set(i, workingTable.get(indexRow).get(i) / ratioValue);
-            }
-
-            for (int i = 0; i < numberOfRows; i++) {
-                if (i != indexRow) {
-                    Double value = workingTable.get(i).get(indexColumn) / workingTable.get(indexRow).get(indexColumn);
-                    for (int j = 0; j < numberOfColumns; j++) {
-                        workingTable.get(i).set(j, workingTable.get(i).get(j) - workingTable.get(indexRow).get(j)*value);
+                } else {
+                    demand[j] = demand[j] - supply[i];
+                    times[i][j] = costs[i][j] * supply[i];
+                    supply[i] = 0;
+                    for (int k = j + 1; k < columns; k++) {
+                        costs[i][k] = 0;
+                    }
+                    if (demand[j] != 0) {
+                        i++;
                     }
                 }
             }
 
-            function = workingTable.get(0).get(numberOfColumns - 1);
-
-            if (abs(function - prevResult) < epsilon) {
-                return answer;
+            wholeDemand = 0;
+            for (int m = 0; m < columns; m++) {
+                wholeDemand += demand[m];
             }
 
-            for (int i = 0; i < C.size(); i++) {
-                answer.add(0.0);
+        }
+        Integer totalCost = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                totalCost += times[i][j];
             }
-            for (int i = 0; i < basic.size(); i++) {
-                if (basic.get(i) <= C.size()) {
-                    answer.set(basic.get(i) - 1, workingTable.get(i + 1).get(numberOfColumns - 1));
+        }
+
+        int length = Integer.toString(allSupply).length();
+
+        System.out.println("Vectors of initial basic feasible solution for North-West:");
+        for (int m = 0; m < rows; m++) {
+            for (int n = 0; n < columns; n++) {
+                System.out.print(times[m][n] + " ");
+                int len = Integer.toString(times[m][n]).length();
+                while (len < length) {
+                    System.out.print(" ");
+                    len += 1;
                 }
             }
-            answer.add(function);
-            prevResult = function;
+            System.out.print("\n");
         }
+        System.out.println();
 
-        return answer;
-
-    }
-    public static Boolean checkCoefficients(ArrayList<Double> array) {
-        for (Double value: array) {
-            if (value < 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
-
-class Matrix {
-    ArrayList<ArrayList<Double>> matrix = new ArrayList<>();
-
-    Matrix() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter the number of rows:");
-        Integer n = Integer.parseInt(sc.nextLine());
-        numberOfRows = n;
-
-        for (int i = 0; i < n; i++) {
-            String line = sc.nextLine();
-            String[] wholeLine = line.split(" ");
-            numberOfColumns = wholeLine.length;
-            ArrayList<Double> mLine = new ArrayList<>();
-            for (String s : wholeLine) {
-                mLine.add(Double.parseDouble(s));
-            }
-            matrix.add(mLine);
-        }
-    }
-
-    Matrix(ArrayList<ArrayList<Double>> array) {
-        matrix = array;
-        numberOfRows = array.size();
-        numberOfColumns = array.get(0).size();
-    }
-
-    Matrix(String console) {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter n (the number of constraints):");
-        Integer n = Integer.parseInt(sc.nextLine());
-        numberOfRows = n;
-        System.out.println("Enter matrix A line by line:");
-        for (int i = 0; i < n; i++) {
-            String line = sc.nextLine();
-            String[] wholeLine = line.split(" ");
-            numberOfColumns = wholeLine.length;
-            ArrayList<Double> mLine = new ArrayList<>();
-            for (String s : wholeLine) {
-                mLine.add(Double.parseDouble(s));
-            }
-            matrix.add(mLine);
-        }
-    }
-
-    Integer numberOfRows;
-    Integer numberOfColumns;
-
-    public Integer getNumberOfRows() {
-        return numberOfRows;
-    }
-
-    public Integer getNumberOfColumns() {
-        return numberOfColumns;
-    }
-
-
-    public Matrix multiply(Matrix b) {
-        if (this.numberOfColumns != b.getNumberOfRows()) {
+        if (wholeDemand != 0) {
+            System.out.println("The North-West corner method is not applicable!");
             System.out.println();
-            System.out.println("The method is not applicable!");
-            throw new IllegalArgumentException("Number of rows does not match the number of columns!");
-        }
-        ArrayList<ArrayList<Double>> newMatrix = new ArrayList<>();
-        for (int i = 0; i < this.numberOfRows; i++) {
-            ArrayList<Double> ar = new ArrayList<>();
-            for (int j = 0; j < b.getNumberOfColumns(); j++) {
-                Double value = 0.0;
-                for (int k = 0; k < this.numberOfColumns; k++) {
-                    value += this.matrix.get(i).get(k) * b.matrix.get(k).get(j);
-                }
-                ar.add(value);
-            }
-            newMatrix.add(ar);
-        }
-        return new Matrix(newMatrix);
-    }
-
-    public ArrayList<Double> multiplyMatVec(ArrayList<Double> vector) {
-        if (this.getNumberOfColumns() != vector.size()) {
-            System.out.println();
-            System.out.println("The method is not applicable!");
-            throw new IllegalArgumentException("Number of rows does not match the number of columns!");
-        }
-        ArrayList<Double> result = new ArrayList<>();
-        for (int i = 0; i < this.getNumberOfRows(); i++) {
-            double value = 0.0;
-            for (int j = 0; j < this.getNumberOfColumns(); j++) {
-
-
-                if (Double.isNaN(matrix.get(i).get(j)) || Double.isNaN(vector.get(j))) {
-                    value += 0.0;
-                }
-                else {
-                    value += matrix.get(i).get(j) * vector.get(j);
-                }
-            }
-            result.add(value);
-        }
-        return result;
-    }
-
-    public Matrix transpose() {
-        ArrayList<ArrayList<Double>> newMatrix = new ArrayList<>();
-        for (int i = 0; i < this.getNumberOfColumns(); i++) {
-            ArrayList<Double> array = new ArrayList<>();
-            for (int j = 0; j < this.getNumberOfRows(); j++) {
-                Double element = matrix.get(j).get(i);
-                array.add(element);
-            }
-            newMatrix.add(array);
-        }
-        return new Matrix(newMatrix);
-    }
-
-    public static Matrix diag(ArrayList<Double> array) {
-        ArrayList<ArrayList<Double>> newMatrix = new ArrayList<>();
-        for (int i = 0; i < array.size(); i++) {
-            ArrayList<Double> ar = new ArrayList<>();
-            for (int j = 0; j < array.size(); j++) {
-                if (i == j) {
-                    ar.add(array.get(i));
-                } else {
-                    ar.add(0.0);
-                }
-            }
-            newMatrix.add(ar);
-        }
-        return new Matrix(newMatrix);
-    }
-
-    public static Matrix identity(int size) {
-        ArrayList<ArrayList<Double>> newMatrix = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            ArrayList<Double> ar = new ArrayList<>();
-            for (int j = 0; j < size; j++) {
-                if (i == j) {
-                    ar.add(1.0);
-                } else {
-                    ar.add(0.0);
-                }
-            }
-            newMatrix.add(ar);
-        }
-        return new Matrix(newMatrix);
-    }
-    public static Matrix eliminationMatrix(Matrix matrix, int i, int j, int pivRow)
-    {
-        Matrix identity = identity(matrix.getNumberOfRows());
-        Double difference  = matrix.matrix.get(i).get(j) / matrix.matrix.get(pivRow).get(j);
-        identity.matrix.get(i).set(j, -difference);
-        return identity;
-    }
-    // function that will find inverse from identity matrix B by making A identity
-    public static Matrix findInverse(Matrix A, Matrix B, int a) {
-        if (a == 1) {
-            ArrayList<ArrayList<Double>> array = new ArrayList<>();
-            ArrayList<Double> ar = new ArrayList<>();
-            ar.add(1 / A.matrix.get(0).get(0));
-            array.add(ar);
-            return new Matrix(array);
         } else {
-            Integer trans = 0;
-            Integer permutationCounter = 0;
-
-            for (int i = 0; i < a - 1; i++) {
-                Double max = abs(A.matrix.get(i).get(i));
-                Boolean swap = false;
-                int position = i;
-                for (int j = i + 1; j < a; j++) {
-                    if (abs(A.matrix.get(j).get(i)) > max) {
-                        max = abs(A.matrix.get(j).get(i));
-                        position = j;
-                        swap = true;
-                    }
-                }
-                if (swap) {
-                    Matrix P = identity(a);
-                    ArrayList<Double> array = P.matrix.get(i);
-                    for (int l = 0; l < P.getNumberOfColumns(); l++) {
-                        P.matrix.get(i).set(l, P.matrix.get(position).get(l));
-                    }
-                    for (int l = 0; l < P.getNumberOfColumns(); l++) {
-                        P.matrix.get(position).set(l, array.get(l));
-                    }
-                    permutationCounter += 1;
-                    A = P.multiply(A);
-                    B = P.multiply(B);
-                    trans += 1;
-                }
-
-                for (int k = i + 1; k < a; k++) {
-                    if (A.matrix.get(k).get(i) != 0) {
-                        Matrix E = eliminationMatrix(A, k, i, i);
-                        A = E.multiply(A);
-                        B = E.multiply(B);
-                        trans += 1;
-                    }
-
-                }
-            }
-
-            for (int i = a - 1; i >= 0; i--) {
-                double max = abs(A.matrix.get(i).get(i));
-                Boolean swap = false;
-                int position = i;
-                for (int j = i + 1; j < a; j++) {
-                    if (abs(A.matrix.get(j).get(i)) > max) {
-                        max = abs(A.matrix.get(j).get(i));
-                        position = j;
-                        swap = true;
-                    }
-                }
-                if (swap) {
-                    Matrix P = identity(a);
-                    ArrayList<Double> array = P.matrix.get(i);
-                    for (int l = 0; l < P.getNumberOfColumns(); l++) {
-                        P.matrix.get(i).set(l, P.matrix.get(position).get(l));
-                    }
-                    for (int l = 0; l < P.getNumberOfColumns(); l++) {
-                        P.matrix.get(position).set(l, array.get(l));
-                    }
-                    permutationCounter += 1;
-                    A = P.multiply(A);
-                    B = P.multiply(B);
-                    trans += 1;
-                }
-
-                for (int k = i - 1; k >= 0; k--) {
-                    if (A.matrix.get(k).get(i) != 0) {
-                        Matrix E = eliminationMatrix(A, k, i, i);
-                        A = E.multiply(A);
-                        B = E.multiply(B);
-                        trans += 1;
-                    }
-
-                }
-
-            }
-            Matrix M = identity(a);
-            for (int i = 0; i < a; i++) {
-                M.matrix.get(i).set(i, 1 / A.matrix.get(i).get(i));
-            }
-            A = M.multiply(A);
-            B = M.multiply(B);
-            return B;
+            System.out.println("Total cost with the North-West corner method: " + totalCost);
+            System.out.println();
         }
+
     }
 
+    public static void vogel(int[] supply, int rows, int columns, int[][] costs, int[] demand, Integer allSupply) {
+        int wholeDemand = allSupply;
+        int totalCost = 0;
+        boolean flag = true;
+        int iteration = 0;
+
+        int[][] visited = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                visited[i][j] = 0;
+            }
+        }
+
+        int[][] times = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                times[i][j] = 0;
+            }
+        }
+        while (flag) {
+            iteration += 1;
+            Integer maxDiff = -1000000;
+            String maxDiffLoc = "";
+            // for rows
+            for (int i = 0; i < rows; i++) {
+                int min1 = 10000000;
+                int min2 = 10000000;
+                for (int j = 0; j < columns; j++) {
+                    if (visited[i][j] != 1) {
+                        if (costs[i][j] < min2) {
+                            min2 = costs[i][j];
+                        }
+                        if (costs[i][j] < min1) {
+                            min2 = min1;
+                            min1 = costs[i][j];
+                        }
+                    }
+                }
+                int difference = min2 - min1;
+                if (difference > maxDiff) {
+                    maxDiff = difference;
+                    maxDiffLoc = "r " + i;
+                }
+            }
+            // for columns
+            for (int j = 0; j < columns; j++) {
+                int min1 = 10000000;
+                int min2 = 10000000;
+                for (int i = 0; i < rows; i++) {
+                    if (visited[i][j] != 1) {
+                        if (costs[i][j] < min2) {
+                            min2 = costs[i][j];
+                        }
+                        if (costs[i][j] < min1) {
+                            min2 = min1;
+                            min1 = costs[i][j];
+                        }
+                    }
+                }
+                int difference = min2 - min1;
+                if (difference > maxDiff) {
+                    maxDiff = difference;
+                    maxDiffLoc = "c " + j;
+                }
+            }
+
+            String[] loc = maxDiffLoc.split(" ");
+            int min = 100000000;
+            int locX = -1;
+            int locY = -1;
+            if (loc[0].equals("r")) {
+                int i = Integer.parseInt(loc[1]);
+                locX = i;
+                for (int j = 0; j < columns; j++) {
+                    if (visited[i][j] != 1) {
+                        if (costs[i][j] < min) {
+                            min = costs[i][j];
+                            locY = j;
+                        }
+                    }
+                }
+            }
+            if (loc[0].equals("c")) {
+                int j = Integer.parseInt(loc[1]);
+                locY = j;
+                for (int i = 0; i < rows; i++) {
+                    if (visited[i][j] != 1) {
+                        if (costs[i][j] < min) {
+                            min = costs[i][j];
+                            locX = i;
+                        }
+                    }
+                }
+            }
+            int i = locX;
+            int j = locY;
+            if (supply[i] >= demand[j]) {
+                times[i][j] = costs[i][j] * demand[j];
+                supply[i] = supply[i] - demand[j];
+                demand[j] = 0;
+                for (int k = i + 1; k < rows; k++) {
+                    visited[k][j] = 1;
+                }
+            } else {
+                demand[j] = demand[j] - supply[i];
+                times[i][j] = costs[i][j] * supply[i];
+                supply[i] = 0;
+                for (int k = j + 1; k < columns; k++) {
+                    visited[i][k] = 1;
+                }
+            }
+            visited[i][j] = 1;
+
+            wholeDemand = 0;
+
+            for (int m = 0; m < columns; m++) {
+                wholeDemand += demand[m];
+            }
+
+            if (wholeDemand == 0 || iteration > rows * columns) {
+                flag = false;
+            }
+        }
+
+        int length = Integer.toString(allSupply).length();
+
+
+        System.out.println("Vectors of initial basic feasible solution for Vogel:");
+        for (int m = 0; m < rows; m++) {
+            for (int n = 0; n < columns; n++) {
+                System.out.print(times[m][n] + " ");
+                int len = Integer.toString(times[m][n]).length();
+                while (len < length) {
+                    System.out.print(" ");
+                    len += 1;
+                }
+            }
+            System.out.print("\n");
+        }
+        System.out.println();
+
+        totalCost = 0;
+        for (int m = 0; m < rows; m++) {
+            for (int n = 0; n < columns; n++) {
+                totalCost += times[m][n];
+            }
+        }
+
+        if (wholeDemand != 0 || iteration > rows * columns) {
+            System.out.println("The Vogel's approximation method is not applicable!");
+            System.out.println();
+        } else {
+            System.out.println("Total cost with the Vogel's approximation method: " + totalCost);
+            System.out.println();
+        }
+
+    }
+
+    public static void russel(int[] supply, int rows, int columns, int[][] costs, int[] demand, Integer allSupply) {
+        int wholeDemand = allSupply;
+        int totalCost = 0;
+        boolean flag = true;
+
+        int[][] visited = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                visited[i][j] = 0;
+            }
+        }
+
+        int[][] times = new int[rows][columns];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                times[i][j] = 0;
+            }
+        }
+
+
+        // choose max value in each row and column
+        int[] maxRows = new int[rows];
+        int[] maxColumns = new int[columns];
+
+        // for rows
+        for (int i = 0; i < rows; i++) {
+            int max = -1000000000;
+            for (int j = 0; j < columns; j++) {
+                if (costs[i][j] > max) {
+                    max = costs[i][j];
+                }
+            }
+            maxRows[i] = max;
+        }
+
+        // for columns
+        for (int j = 0; j < columns; j++) {
+            int max = -1000000000;
+            for (int i = 0; i < rows; i++) {
+                if (costs[i][j] > max) {
+                    max = costs[i][j];
+                }
+            }
+            maxColumns[j] = max;
+        }
+
+        int[][] diffs = new int[rows][columns];
+
+        // calculate differences for each cell
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                diffs[i][j] = costs[i][j] - (maxRows[i] + maxColumns[j]);
+            }
+        }
+
+
+        while (flag) {
+            int min = 1000000000;
+            int x = -1;
+            int y = -1;
+            // select most negative cell
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    if (diffs[i][j] < min && visited[i][j] != 1) {
+                        min = diffs[i][j];
+                        x = i;
+                        y = j;
+                    }
+                }
+            }
+
+            int i = x;
+            int j = y;
+            if (supply[i] >= demand[j]) {
+                times[i][j] = costs[i][j] * demand[j];
+                supply[i] = supply[i] - demand[j];
+                demand[j] = 0;
+                for (int k = 0; k < rows; k++) {
+                    visited[k][j] = 1;
+                }
+            } else {
+                demand[j] = demand[j] - supply[i];
+                times[i][j] = costs[i][j] * supply[i];
+                supply[i] = 0;
+                for (int k = 0; k < columns; k++) {
+                    visited[i][k] = 1;
+                }
+            }
+
+            wholeDemand = 0;
+
+            for (int m = 0; m < columns; m++) {
+                wholeDemand += demand[m];
+            }
+
+            if (wholeDemand == 0) {
+                flag = false;
+            }
+
+        }
+
+        int length = Integer.toString(allSupply).length();
+        System.out.println("Vectors of initial basic feasible solution for Russel:");
+        for (int m = 0; m < rows; m++) {
+            for (int n = 0; n < columns; n++) {
+                System.out.print(times[m][n] + " ");
+                int len = Integer.toString(times[m][n]).length();
+                while (len < length) {
+                    System.out.print(" ");
+                    len += 1;
+                }
+            }
+            System.out.print("\n");
+        }
+        System.out.println();
+
+
+        totalCost = 0;
+        for (int m = 0; m < rows; m++) {
+            for (int n = 0; n < columns; n++) {
+                totalCost += times[m][n];
+            }
+        }
+
+        if (wholeDemand != 0) {
+            System.out.println("The Russel's approximation method is not applicable!");
+            System.out.println();
+        } else {
+            System.out.println("Total cost with the Russel's approximation method: " + totalCost);
+            System.out.println();
+        }
+
+
+    }
 }
